@@ -1,159 +1,242 @@
-# Project: PDF Drawing Analyzer
+# Engineering Drawing Measurement Extraction
 
-This project automates the process of extracting and analyzing technical drawing data from PDFs, answering specific questions defined in an Excel file, and writing the results back to the same Excel file. It is designed to work dynamically with varying PDF and Excel formats without hardcoding.
+A Python-based automated system for extracting measurements and specifications from engineering drawings in PDF format. The system uses OCR technology to identify and extract various measurements and automatically updates them in an Excel checklist. It is designed to work dynamically with varying PDF and Excel formats without hardcoding.
+
+## Table of Contents
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Project Structure](#project-structure)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Features](#features)
+- [Technical Details](#technical-details)
+- [Error Handling](#error-handling)
+- [Scalability](#scalability)
+- [Limitations](#limitations)
+- [Future Enhancements](#future-enhancements)
+- [Contributing](#contributing)
+
+## Overview
+This project automates the extraction of measurements from engineering drawings by:
+- Converting PDF pages to high-resolution images
+- Using OCR to extract text and measurements
+- Processing and validating the extracted data
+- Updating an Excel checklist with the results
+- Providing visual feedback through color-coding
 
 ## Requirements
 
-### Software Requirements
+### System Requirements
 - Python 3.8 or higher
-- Operating System: Windows/Linux/MacOS
-- Tesseract OCR installed (for image text extraction)
+- 4GB RAM minimum (8GB recommended)
+- Tesseract OCR engine installed
+- Poppler installed (for PDF processing)
 
-### Python Libraries
-Install the following libraries before running the project:
-```bash
-pip install pytesseract pandas PyPDF2 pdf2image pillow
+### Python Dependencies
+```plaintext
+pytesseract>=0.3.8
+pdf2image>=1.16.0
+opencv-python>=4.5.3
+numpy>=1.21.0
+pandas>=1.3.0
+openpyxl>=3.0.7
 ```
 
-### External Tools
-- **Tesseract OCR**: Required for extracting text from images.
-  - Download and install Tesseract from [Tesseract GitHub](https://github.com/tesseract-ocr/tesseract).
-  - Add Tesseract to your system PATH.
+## Installation
 
-### Files Needed
-1. **PDF File**: The file containing technical drawings (e.g., `Autodesk Part Drawings.pdf`).
-2. **Excel File**: An Excel file with questions in column B and placeholders for answers in column C (e.g., `Drawing Checklist.xlsx`).
+1. Install system dependencies:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get update
+   sudo apt-get install tesseract-ocr poppler-utils
+   
+   # macOS
+   brew install tesseract poppler
+   
+   # Windows
+   # Download and install Tesseract from GitHub
+   # Download and install poppler from conda-forge
+   ```
 
-### Directory Structure
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/engineering-drawing-extraction.git
+   cd engineering-drawing-extraction
+   ```
+
+3. Create and activate virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/macOS
+   venv\Scripts\activate     # Windows
+   ```
+
+4. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Project Structure
 ```
-project/
-|
+engineering-drawing-extraction/
+├── src/
+│   ├── __init__.py
+│   ├── excel_handler.py
+│   ├── image_processing.py
+│   └── pdf_extraction.py
+├── tests/
+│   ├── __init__.py
+│   ├── unittests.py
 ├── config.json
 ├── main.py
-├── data/
-│   ├── input/
-│   │   ├── Autodesk Part Drawings.pdf
-│   └── Drawing Checklist.xlsx
-├── src/
-    ├── drawing_analyzer.py
-    ├── excel_handler.py
-    └── pdf_extraction.py
+├── requirements.txt
+└── README.md
 ```
-
-## How It Works
-
-1. **Config File**:
-   - `config.json` stores the paths for the input PDF and Excel file.
-   - Example:
-     ```json
-     {
-         "pdf_path": "./data/input/Autodesk Part Drawings.pdf",
-         "excel_path": "./data/Drawing Checklist.xlsx"
-     }
-     ```
-
-2. **Main Script**:
-   - The `main.py` script reads the config file, processes the PDF and Excel file, and writes answers to the Excel file.
-
-3. **Excel Handler**:
-   - Reads questions from column B of the Excel file.
-   - Writes answers to column C of the Excel file.
-
-4. **PDF Extraction**:
-   - Extracts specific pages from the PDF based on the question requirements.
-   - Converts the PDF page to an image for analysis.
-
-5. **Drawing Analyzer**:
-   - Uses OCR to extract text from the image.
-   - Identifies and extracts relevant data (e.g., diameters, lengths) based on the question.
-
-## Installation Guide
-
-1. Clone the repository:
-   ```bash
-   git clone <repository_url>
-   cd project/
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install pytesseract pandas PyPDF2 pdf2image pillow
-   ```
-
-3. Install and configure Tesseract OCR:
-   - Download Tesseract from [here](https://github.com/tesseract-ocr/tesseract).
-   - Add the Tesseract executable path in the `src/drawing_analyzer.py` file:
-     ```python
-     pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
-     ```
-
-4. Place your input files in the `data/input` directory:
-   - `Autodesk Part Drawings.pdf`
-   - `Drawing Checklist.xlsx`
-
-5. Update the file paths in `config.json` if necessary.
 
 ## Usage
 
-1. Run the main script:
+1. Configure the input/output paths in `config.json`:
+   ```json
+   {
+       "pdf_path": "path/to/your/drawing.pdf",
+       "excel_path": "path/to/your/checklist.xlsx"
+   }
+   ```
+
+2. Prepare your Excel checklist with the required format:
+   - Column B: Questions/specifications grouped by page
+   - Column C: Will be populated with extracted values
+
+3. Run the extraction:
    ```bash
    python main.py
    ```
 
-2. The script will:
-   - Read questions from the Excel file.
-   - Extract relevant pages from the PDF.
-   - Perform OCR on the pages to analyze the drawings.
-   - Write the answers back to column C of the Excel file.
+4. Check the results in your Excel file:
+   - Green cells: Successfully extracted values
+   - Pink cells: Failed extractions
 
-3. Output:
-   - Updated Excel file with answers in column C.
+## Features
 
-## Code Overview
+### Current Features
+- PDF to image conversion with optimized DPI
+- Advanced image preprocessing for better OCR
+- Multiple OCR passes with different configurations
+- Intelligent context-based measurement extraction
+- Support for various measurement types:
+  - Linear dimensions
+  - Diameters
+  - Angles
+  - Depths
+  - Edge distances
+- Excel integration with visual feedback
+- Robust error handling and logging
 
-### 1. `main.py`
-- Entry point of the application.
-- Coordinates the entire workflow: reading questions, extracting pages, analyzing drawings, and writing answers.
+### Supported Measurements
+- Total length from side view
+- Hole diameters
+- Part width
+- Hole-to-edge distances
+- Chamfer angles
+- Hole-to-hole distances
+- Counterbore depths
+- Disc thickness
+- Circle diameters (PCD)
 
-### 2. `config.json`
-- Stores the paths to the input PDF and Excel files.
+## Technical Details
 
-### 3. `src/excel_handler.py`
-- Handles reading and writing data to the Excel file.
+### Image Processing
+- Adaptive contrast enhancement
+- Noise reduction
+- Binary thresholding
+- Morphological operations
 
-### 4. `src/pdf_extraction.py`
-- Extracts specific pages from the PDF and converts them into images for analysis.
+### OCR Strategy
+- Multiple PSM modes for different text layouts
+- Context-aware pattern matching
+- Validation through multiple passes
+- Symbol and dimension recognition
 
-### 5. `src/drawing_analyzer.py`
-- Uses OCR to extract text from images.
-- Contains logic to analyze the extracted text and retrieve relevant information.
-
-## Example
-
-### Input
-- **PDF File**: Contains technical drawings.
-- **Excel File**:
-  | B (Questions)                              | C (Answers)       |
-  |-------------------------------------------|-------------------|
-  | Page-2: Capture the diameter of the hole. |                   |
-
-### Output
-- **Updated Excel File**:
-  | B (Questions)                              | C (Answers)       |
-  |-------------------------------------------|-------------------|
-  | Page-2: Capture the diameter of the hole. | 15                |
+### Data Validation
+- Range-based filtering
+- Context verification
+- Duplicate detection
+- Statistical validation (most common values)
 
 ## Error Handling
+- Comprehensive exception handling
+- Detailed error logging
+- Graceful fallbacks
+- Visual feedback in Excel
 
-- Invalid paths: Check if files exist before processing.
-- OCR errors: Log errors if OCR fails to extract text.
-- Excel write errors: Validate data before writing.
+## Scalability
 
-## Future Improvements
+### Current Capabilities
+- Processes single PDF files
+- Handles multiple pages within a PDF
+- Supports standard engineering drawing formats
 
-1. Add support for multiple languages in OCR.
-2. Improve question parsing with NLP models.
-3. Enhance drawing analysis using advanced computer vision techniques (e.g., OpenCV).
-4. Automate unit testing for PDF and Excel handlers.
+### Scalability Options
+1. Batch Processing
+   - Process multiple PDFs in sequence
+   - Parallel processing of different drawings
+   - Distributed processing across machines
+
+2. Storage Optimization
+   - Temporary file cleanup
+   - Image compression
+   - Memory management for large files
+
+3. Performance Enhancement
+   - Caching of intermediate results
+   - Multi-threading for image processing
+   - GPU acceleration for OCR
+
+## Limitations
+- Requires consistent drawing formatting
+- OCR accuracy depends on image quality
+- Limited support for handwritten text
+- May struggle with complex overlapping dimensions
+- Processing time increases with image resolution
+
+## Future Enhancements
+
+### Short-term Improvements
+1. Support for additional measurement types
+2. Enhanced symbol recognition
+3. Improved error reporting
+4. Configuration UI
+5. Progress tracking
+
+### Medium-term Goals
+1. Machine learning for pattern recognition
+2. Support for multiple drawing standards
+3. PDF annotation capability
+4. Batch processing interface
+5. Result verification tools
+
+### Long-term Vision
+1. AI-powered drawing understanding
+2. 3D model generation from 2D drawings
+3. CAD software integration
+4. Cloud-based processing
+5. Mobile app for scanning and processing
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a pull request
+
+### Contribution Guidelines
+- Follow PEP 8 style guide
+- Add unit tests for new features
+- Update documentation
+- Maintain backwards compatibility
 
 
+
+![alt text](<Screenshot 2025-01-13 at 10.01.23 PM.png>)
